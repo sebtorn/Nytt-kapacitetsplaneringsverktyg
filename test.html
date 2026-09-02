@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kapacitetsplanering - Test</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #1e40af;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #1e293b;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            padding: 30px 0;
+            margin-bottom: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        header h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+        
+        header p {
+            text-align: center;
+            opacity: 0.9;
+            margin-top: 10px;
+        }
+        
+        .card {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .card h2 {
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid var(--light);
+            padding-bottom: 10px;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+        }
+        
+        .btn-success {
+            background-color: var(--success);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #059669;
+        }
+        
+        .btn-danger {
+            background-color: var(--danger);
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--dark);
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background-color: #e2e8f0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--primary));
+            transition: width 0.5s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        th {
+            background-color: #f8fafc;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        
+        tr:hover {
+            background-color: #f8fafc;
+        }
+        
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-available {
+            background-color: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-booked {
+            background-color: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .status-full {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .chart-container {
+            height: 300px;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            display: none;
+            z-index: 1000;
+        }
+        
+        .notification.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 Kapacitetsplaneringsverktyg</h1>
+            <p>Testversion för planering och optimering</p>
+        </header>
+        
+        <!-- Statistik -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="totalCapacity">100%</div>
+                <div class="stat-label">Total Kapacitet</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="bookedSlots">65%</div>
+                <div class="stat-label">Bokade Slots</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="availableSlots">35%</div>
+                <div class="stat-label">Tillgängliga</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="efficiency">85%</div>
+                <div class="stat-label">Effektivitet</div>
+            </div>
+        </div>
+        
+        <!-- Kapacitetsöversikt -->
+        <div class="card">
+            <h2>📈 Kapacitetsöversikt</h2>
+            <div class="progress-bar">
+                <div class="progress-fill" id="capacityProgress" style="width: 65%">65%</div>
+            </div>
+            
+            <div class="grid">
+                <div>
+                    <h3>Resurser</h3>
+                    <ul style="list-style: none; text-align: left;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✅ Maskin A: 80% bokad</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✅ Maskin B: 70% bokad</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">✅ Maskin C: 50% bokad</li>
+                        <li style="padding: 8px 0;">⏳ Maskin D: 30% bokad</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Team</h3>
+                    <ul style="list-style: none; text-align: left;">
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">👥 Team Alpha: 90% utnyttjad</li>
+                        <li style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">👥 Team Beta: 75% utnyttjad</li>
+                        <li style="padding: 8px 0;">👥 Team Gamma: 60% utnyttjad</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bokningssystem -->
+        <div class="card">
+            <h2>📅 Ny Bokning</h2>
+            <div class="grid">
+                <div>
+                    <form id="bookingForm">
+                        <div class="form-group">
+                            <label for="resource">Resurs</label>
+                            <select id="resource" required>
+                                <option value="">Välj resurs...</option>
+                                <option value="maskin-a">Maskin A</option>
+                                <option value="maskin-b">Maskin B</option>
+                                <option value="maskin-c">Maskin C</option>
+                                <option value="maskin-d">Maskin D</option>
+                                <option value="team-alpha">Team Alpha</option>
+                                <option value="team-beta">Team Beta</option>
+                                <option value="team-gamma">Team Gamma</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="startDate">Startdatum</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="duration">Varaktighet (timmar)</label>
+                            <input type="number" id="duration" min="1" max="8" value="2" required>
+                        </div>
+                        <div style="display: flex; gap: 10px; margin-top: 10px;">
+                            <button type="submit" class="btn btn-primary">Boka Nu</button>
+                            <button type="reset" class="btn" style="background: #94a3b8; color: white;">Återställ</button>
+                        </div>
+                    </form>
+                </div>
+                <div>
+                    <h3>Kommande Bokningar</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Resurs</th>
+                                <th>Datum</th>
+                                <th>Tid</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTable">
+                            <tr>
+                                <td>Maskin A</td>
+                                <td>2024-09-05</td>
+                                <td>09:00-11:00</td>
+                                <td><span class="status-badge status-booked">Bokad</span></td>
+                            </tr>
+                            <tr>
+                                <td>Team Beta</td>
+                                <td>2024-09-06</td>
+                                <td>13:00-15:00</td>
+                                <td><span class="status-badge status-available">Tillgänglig</span></td>
+                            </tr>
+                            <tr>
+                                <td>Maskin C</td>
+                                <td>2024-09-07</td>
+                                <td>08:00-12:00</td>
+                                <td><span class="status-badge status-full">Full</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Analys -->
+        <div class="card">
+            <h2>📊 Analys & Rapporter</h2>
+            <div class="grid">
+                <div class="chart-container">
+                    <h3>Kapacitetsfördelning</h3>
+                    <canvas id="capacityChart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Utnyttjande över tid</h3>
+                    <canvas id="usageChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Meddelande -->
+    <div class="notification" id="notification">
+        <strong>✅ Success!</strong><br>
+        <span id="notificationMessage">Bokningen har skapats.</span>
+    </div>
+    
+    <script>
+        // Simulera dynamisk data
+        function updateDashboard() {
+            const capacities = {
+                'maskin-a': 80,
+                'maskin-b': 70,
+                'maskin-c': 50,
+                'maskin-d': 30,
+                'team-alpha': 90,
+                'team-beta': 75,
+                'team-gamma': 60
+            };
+            
+            // Uppdatera total kapacitet
+            const total = Object.values(capacities).reduce((sum, val) => sum + val, 0) / Object.values(capacities).length;
+            document.getElementById('totalCapacity').textContent = Math.round(total) + '%';
+            document.getElementById('bookedSlots').textContent = Math.round(total) + '%';
+            document.getElementById('availableSlots').textContent = Math.round(100 - total) + '%';
+            document.getElementById('capacityProgress').style.width = total + '%';
+            document.getElementById('capacityProgress').textContent = Math.round(total) + '%';
+        }
+        
+        // Hantera bokningsformulär
+        document.getElementById('bookingForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const resource = document.getElementById('resource').value;
+            const startDate = document.getElementById('startDate').value;
+            const duration = document.getElementById('duration').value;
+            
+            if (!resource || !startDate) {
+                showNotification('Vänligen fyll i alla fält', 'danger');
+                return;
+            }
+            
+            // Lägg till ny bokning i tabellen
+            const table = document.getElementById('bookingsTable');
+            const newRow = document.createElement('tr');
+            newRow.innerHTML = `
+                <td>${getResourceName(resource)}</td>
+                <td>${startDate}</td>
+                <td>${calculateTime(duration)}</td>
+                <td><span class="status-badge status-booked">Bokad</span></td>
+            `;
+            table.prepend(newRow);
+            
+            // Visa meddelande
+            showNotification(`Bokning skapad för ${getResourceName(resource)}`);
+            
+            // Återställ formulär
+            this.reset();
+            
+            // Uppdatera dashboard
+            updateDashboard();
+        });
+        
+        function getResourceName(id) {
+            const names = {
+                'maskin-a': 'Maskin A',
+                'maskin-b': 'Maskin B',
+                'maskin-c': 'Maskin C',
+                'maskin-d': 'Maskin D',
+                'team-alpha': 'Team Alpha',
+                'team-beta': 'Team Beta',
+                'team-gamma': 'Team Gamma'
+            };
+            return names[id] || id;
+        }
+        
+        function calculateTime(hours) {
+            const startHour = 8; // Start klockan 8
+            const endHour = startHour + parseInt(hours);
+            return `${String(startHour).padStart(2, '0')}:00-${String(endHour).padStart(2, '0')}:00`;
+        }
+        
+        function showNotification(message, type = 'success') {
+            const notification = document.getElementById('notification');
+            const messageEl = document.getElementById('notificationMessage');
+            
+            messageEl.textContent = message;
+            notification.className = 'notification show';
+            
+            if (type === 'danger') {
+                notification.style.background = '#fee2e2';
+                notification.style.color = '#991b1b';
+            } else {
+                notification.style.background = '#d1fae5';
+                notification.style.color = '#065f46';
+            }
+            
+            setTimeout(() => {
+                notification.className = 'notification';
+            }, 3000);
+        }
+        
+        // Enkel chart med canvas (ingen extern lib)
+        function createSimpleChart() {
+            const capacityCtx = document.getElementById('capacityChart');
+            if (capacityCtx) {
+                const ctx = capacityCtx.getContext('2d');
+                
+                // Rita en enkel stapeldiagram
+                const data = [80, 70, 50, 30];
+                const labels = ['Maskin A', 'Maskin B', 'Maskin C', 'Maskin D'];
+                const colors = ['#2563eb', '#1e40af', '#10b981', '#f59e0b'];
+                
+                const maxValue = Math.max(...data);
+                const barWidth = 50;
+                const spacing = 80;
+                
+                // Rita staplar
+                data.forEach((value, index) => {
+                    const barHeight = (value / maxValue) * 200;
+                    const x = index * (barWidth + spacing) + 30;
+                    const y = 250 - barHeight;
+                    
+                    ctx.fillStyle = colors[index];
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                    
+                    // Rit text
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '12px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(value + '%', x + barWidth/2, y + barHeight/2);
+                    
+                    // Rit label
+                    ctx.fillStyle = '#000';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(labels[index], x + barWidth/2, 270);
+                });
+            }
+        }
+        
+        // Initiera
+        updateDashboard();
+        createSimpleChart();
+        
+        // Sätt dagens datum som default
+        document.getElementById('startDate').valueAsDate = new Date();
+    </script>
+</body>
+</html>
