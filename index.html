@@ -1,13 +1,351 @@
 <!DOCTYPE html>
 <html lang="sv">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Kapacitetsplanerare | Team Capacity Planner</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<head>
+<meta charset="UTF-8">
+<title>Kapacitetsplanering</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<style>
+:root{--p:#2563eb;--s:#7c3aed;--g:#10b981;--w:#f59e0b;--d:#ef4444;--l:#f8fafc;--k:#1e293b;--y:#64748b;--b:#e2e8f0;--bg:#f1f5f9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;background:var(--bg);color:var(--k);line-height:1.6}
+.app{display:grid;grid-template-columns:260px 1fr;min-height:100vh}
+.sidebar{background:white;border-right:1px solid var(--b);padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sidebar h1{font-size:1.25rem;font-weight:700;color:var(--p);padding:0 20px 20px;border-bottom:1px solid var(--b);margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.nav{list-style:none}
+.nav a{display:flex;align-items:center;gap:12px;padding:12px 20px;cursor:pointer;transition:all .2s;border-left:3px solid transparent;text-decoration:none;color:var(--k)}
+.nav a:hover{background:var(--bg)}
+.nav a.active{background:#eff6ff;border-left-color:var(--p);color:var(--p);font-weight:600}
+.nav i{width:20px;text-align:center}
+.main{padding:30px;overflow-y:auto}
+.page{display:none}
+.page.active{display:block}
+.h{margin-bottom:30px}
+.h h1{font-size:1.75rem;font-weight:700;display:flex;align-items:center;gap:10px}
+.h p{color:var(--y);margin-top:5px}
+.card{background:white;border-radius:12px;padding:25px;margin-bottom:20px;box-shadow:0 1px 3px rgba(0,0,0,.1);border:1px solid var(--b)}
+.cardh{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid var(--b)}
+.cardh h2{font-size:1.25rem;font-weight:600}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;display:inline-flex;align-items:center;gap:8px}
+.btn-p{background:var(--p);color:white}.btn-p:hover{background:var(--s)}
+.btn-s{background:var(--bg);color:var(--k);border:1px solid var(--b)}
+.btn-s:hover{background:var(--b)}
+.btn-d{background:var(--d);color:white}
+.btn-sm{padding:6px 12px;font-size:.85rem}
+.f{display:flex}.jb{justify-content:space-between}.ic{align-items:center}.g1{gap:5px}.g2{gap:10px}.g3{gap:15px}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;margin-bottom:20px}
+.fg2{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px}
+.stat{background:white;padding:20px;border-radius:12px;box-shadow:0 1px 3px rgba(0,0,0,.1);border:1px solid var(--b);text-align:center}
+.statv{font-size:2rem;font-weight:700;color:var(--p);margin-bottom:5px}
+.statl{color:var(--y);font-size:.85rem;text-transform:uppercase;letter-spacing:.5px}
+.tc{overflow-x:auto}
+table{width:100%;border-collapse:collapse}
+th,td{padding:12px 15px;text-align:left;border-bottom:1px solid var(--b)}
+th{background:var(--bg);font-weight:600;color:var(--y);font-size:.85rem;text-transform:uppercase}
+tr:hover{background:var(--bg)}
+.badge{display:inline-block;padding:4px 10px;border-radius:20px;font-size:.75rem;font-weight:600;text-transform:uppercase}
+.b-fe{background:#dbeafe;color:#1e40af}.b-be{background:#dcfce7;color:#166534}.b-both{background:#f3e8ff;color:#6b21a8}.b-abs{background:#fee2e2;color:#991b1b}
+.pc{margin:15px 0}
+.pl{display:flex;justify-content:space-between;margin-bottom:5px;font-size:.85rem;color:var(--y)}
+.pb{height:24px;background:var(--b);border-radius:12px;overflow:hidden}
+.pf{height:100%;border-radius:12px;transition:width .3s;display:flex;align-items:center;justify-content:flex-end;padding-right:8px;color:white;font-size:.75rem;font-weight:600}
+.pf-fe{background:linear-gradient(90deg,#3b82f6,#1d4ed8)}.pf-be{background:linear-gradient(90deg,#10b981,#059669)}.pf-t{background:linear-gradient(90deg,#7c3aed,#6d28d9)}.pf-d{background:linear-gradient(90deg,#ef4444,#dc2626)}
+.mo{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;opacity:0;visibility:hidden;transition:all .2s}
+.mo.show{opacity:1;visibility:visible}
+.md{background:white;border-radius:12px;width:90%;max-width:800px;max-height:90vh;overflow-y:auto;transform:scale(.9);transition:transform .2s}
+.mo.show .md{transform:scale(1)}
+.mh{display:flex;justify-content:space-between;align-items:center;padding:20px 25px;border-bottom:1px solid var(--b)}
+.mh h2{font-size:1.25rem;font-weight:600}
+.mc{background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--y);padding:5px}
+.mb{padding:25px}
+.mf{display:flex;justify-content:flex-end;gap:10px;padding:20px 25px;border-top:1px solid var(--b)}
+.cv{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.ch{display:contents}
+.cdh{text-align:center;font-weight:600;font-size:.85rem;color:var(--y);padding:10px;background:var(--bg);border-radius:6px}
+.cd{min-height:120px;background:white;border:1px solid var(--b);border-radius:6px;padding:8px}
+.cd.empty{background:transparent;border:none}
+.tc{text-align:center}
+@media (max-width:768px){.app{grid-template-columns:1fr}.sidebar{display:none}.main{padding:20px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+<h1><i class="fas fa-chart-pie"></i> Kapacitet</h1>
+<nav class="nav">
+<a class="active" data-page="overview"><i class="fas fa-home"></i><span>Översikt</span></a>
+<a data-page="teams"><i class="fas fa-users"></i><span>Team</span></a>
+<a data-page="work"><i class="fas fa-tasks"></i><span>Arbeten</span></a>
+<a data-page="sprints"><i class="fas fa-running"></i><span>Sprintar</span></a>
+<a data-page="deliveries"><i class="fas fa-shipping-fast"></i><span>Leveranser</span></a>
+<a data-page="calendar"><i class="fas fa-calendar-alt"></i><span>Kalender</span></a>
+</nav>
+</aside>
+<main class="main" id="main"></main>
+</div>
+
+<!-- MODALS -->
+<div class="mo" id="teamM"><div class="md">
+<div class="mh"><h2 id="teamMT">Ny Team</h2><button class="mc" onclick="closeM('teamM')"><i class="fas fa-times"></i></button></div>
+<div class="mb">
+<form id="teamF">
+<input type="hidden" id="teamId">
+<div class="fg">
+<div class="fg">
+<label>Namn</label>
+<input type="text" id="teamName" required>
+</div>
+<div class="fg">
+<label>Beskrivning</label>
+<textarea id="teamDesc" rows="3"></textarea>
+</div>
+</form>
+</div>
+<div class="mf">
+<button class="btn btn-s" onclick="closeM('teamM')">Avbryt</button>
+<button class="btn btn-p" onclick="saveTeam()">Spara</button>
+</div>
+</div></div>
+
+<div class="mo" id="memberM"><div class="md">
+<div class="mh"><h2 id="memberMT">Ny Medlem</h2><button class="mc" onclick="closeM('memberM')"><i class="fas fa-times"></i></button></div>
+<div class="mb">
+<form id="memberF">
+<input type="hidden" id="memberId">
+<div class="fg">
+<div class="fg"><label>Namn</label><input type="text" id="mName" required></div>
+<div class="fg"><label>Team</label><select id="mTeam" required data-team><option value="">Välj...</option></select></div>
+</div>
+<div class="fg">
+<div class="fg"><label>Roll</label><select id="mRole" required><option value="">Välj...</option><option value="Developer">Utvecklare</option><option value="FE">Frontend</option><option value="BE">Backend</option><option value="Fullstack">Fullstack</option><option value="PO">PO</option><option value="SM">SM</option></select></div>
+<div class="fg"><label>Resurstyp</label><select id="mType" required><option value="FE">FE</option><option value="BE">BE</option><option value="Both" selected>Både</option></select></div>
+</div>
+<div class="fg">
+<div class="fg"><label>Fokusfaktor (%)</label><input type="number" id="mFocus" min="0" max="100" value="100"></div>
+<div class="fg"><label>Daglig kapacitet (h)</label><input type="number" id="mCap" min="0" max="24" value="8"></div>
+</div>
+<div class="fg">
+<div class="fg"><label>FE Allokering (%)</label><input type="number" id="mFE" min="0" max="100" value="50"></div>
+<div class="fg"><label>BE Allokering (%)</label><input type="number" id="mBE" min="0" max="100" value="50"></div>
+</div>
+<div class="fg"><label>Åtaganden</label>
+<div class="f g2 mb2"><input type="text" id="newComm" placeholder="Namn"><input type="number" id="commH" placeholder="Timmar" min="0" style="width:100px"><button class="btn btn-p btn-sm" type="button" onclick="addComm()"><i class="fas fa-plus"></i></button></div>
+<div id="commC"></div>
+</div>
+<div class="fg"><label>Frånvaro</label>
+<div class="f g2 mb2"><input type="date" id="absDate"><select id="absType"><option value="Semester">Semester</option><option value="Sjuk">Sjuk</option><option value="Utbildning">Utbildning</option><option value="Ledighet">Ledighet</option></select><input type="number" id="absDays" placeholder="Dagar" min="1" value="1" style="width:80px"><button class="btn btn-p btn-sm" type="button" onclick="addAbs()"><i class="fas fa-plus"></i></button></div>
+<div id="absC"></div>
+</div>
+</form>
+</div>
+<div class="mf">
+<button class="btn btn-s" onclick="closeM('memberM')">Avbryt</button>
+<button class="btn btn-p" onclick="saveMember()">Spara</button>
+</div>
+</div></div>
+
+<div class="mo" id="workM"><div class="md">
+<div class="mh"><h2 id="workMT">Nytt Arbete</h2><button class="mc" onclick="closeM('workM')"><i class="fas fa-times"></i></button></div>
+<div class="mb">
+<form id="workF">
+<input type="hidden" id="workId">
+<div class="fg"><label>Titel</label><input type="text" id="wTitle" required></div>
+<div class="fg"><label>Beskrivning</label><textarea id="wDesc" rows="3"></textarea></div>
+<div class="fg">
+<div class="fg"><label>Typ</label><select id="wType" required><option value="">Välj...</option><option value="FE">FE</option><option value="BE">BE</option><option value="Both" selected>Både</option></select></div>
+<div class="fg"><label>Prioritet</label><select id="wPri"><option value="Low">Låg</option><option value="Medium" selected>Medel</option><option value="High">Hög</option><option value="Critical">Kritisk</option></select></div>
+</div>
+<div class="fg">
+<div class="fg"><label>Estimat (h)</label><input type="number" id="wEst" min="0" step=".5" value="0" required></div>
+<div class="fg"><label>Återstående (h)</label><input type="number" id="wRem" min="0" step=".5" value="0"></div>
+</div>
+<div class="fg"><label>Sprint</label><select id="wSprint"><option value="">Ingen...</option></select></div>
+<div class="fg"><label>Leverans</label><select id="wDelivery"><option value="">Ingen...</option></select></div>
+</form>
+</div>
+<div class="mf">
+<button class="btn btn-s" onclick="closeM('workM')">Avbryt</button>
+<button class="btn btn-p" onclick="saveWork()">Spara</button>
+</div>
+</div></div>
+
+<div class="mo" id="sprintM"><div class="md">
+<div class="mh"><h2 id="sprintMT">Ny Sprint</h2><button class="mc" onclick="closeM('sprintM')"><i class="fas fa-times"></i></button></div>
+<div class="mb">
+<form id="sprintF">
+<input type="hidden" id="sprintId">
+<div class="fg">
+<div class="fg"><label>Namn</label><input type="text" id="sName" placeholder="Sprint 1"></div>
+<div class="fg"><label>Nummer</label><input type="number" id="sNum" min="1" value="1"></div>
+</div>
+<div class="fg">
+<div class="fg"><label>Startdatum</label><input type="date" id="sStart" required></div>
+<div class="fg"><label>Slutdatum</label><input type="date" id="sEnd" required></div>
+</div>
+<div class="fg"><label>Team</label><select id="sTeam" required data-team><option value="">Välj...</option></select></div>
+<div class="fg"><label>Avdrag</label>
+<div class="f g2 mb2"><input type="text" id="ovName" placeholder="Namn"><input type="number" id="ovH" placeholder="Timmar" min="0" style="width:100px"><button class="btn btn-p btn-sm" type="button" onclick="addOv()"><i class="fas fa-plus"></i></button></div>
+<div id="ovC"></div>
+</div>
+<div class="fg"><label>Lägg till arbeten</label>
+<select id="avWork" multiple size="5" style="width:100%"></select>
+<div class="f jb g2 mt2"><button class="btn btn-s btn-sm" type="button" onclick="addToSprint()"><i class="fas fa-arrow-right"></i></button><button class="btn btn-s btn-sm" type="button" onclick="remFromSprint()"><i class="fas fa-arrow-left"></i></button></div>
+<select id="sWork" multiple size="5" style="width:100%;margin-top:10px"></select>
+</div>
+</form>
+</div>
+<div class="mf">
+<button class="btn btn-s" onclick="closeM('sprintM')">Avbryt</button>
+<button class="btn btn-p" onclick="saveSprint()">Spara</button>
+</div>
+</div></div>
+
+<div class="mo" id="deliveryM"><div class="md">
+<div class="mh"><h2 id="deliveryMT">Ny Leverans</h2><button class="mc" onclick="closeM('deliveryM')"><i class="fas fa-times"></i></button></div>
+<div class="mb">
+<form id="deliveryF">
+<input type="hidden" id="deliveryId">
+<div class="fg"><label>Namn</label><input type="text" id="dName" required></div>
+<div class="fg"><label>Beskrivning</label><textarea id="dDesc" rows="3"></textarea></div>
+<div class="fg">
+<div class="fg"><label>Startdatum</label><input type="date" id="dStart" required></div>
+<div class="fg"><label>Slutdatum</label><input type="date" id="dEnd" required></div>
+</div>
+<div class="fg"><label>Milestones</label>
+<div class="f g2 mb2"><input type="text" id="msName" placeholder="Namn"><input type="date" id="msDate"><button class="btn btn-p btn-sm" type="button" onclick="addMs()"><i class="fas fa-plus"></i></button></div>
+<div id="msC"></div>
+</div>
+<div class="fg"><label>Sprintar i leveransen</label><select id="dSprints" multiple size="5" style="width:100%"></select></div>
+</form>
+</div>
+<div class="mf">
+<button class="btn btn-s" onclick="closeM('deliveryM')">Avbryt</button>
+<button class="btn btn-p" onclick="saveDelivery()">Spara</button>
+</div>
+</div></div>
+
+<div class="mo" id="notif"><div class="md" style="max-width:400px">
+<div class="mb tc">
+<i id="notifI" class="fas fa-check-circle" style="font-size:3rem;color:var(--g);margin-bottom:15px"></i>
+<h3 id="notifT">Success!</h3>
+<p id="notifM"></p>
+</div>
+<div class="mf jc">
+<button class="btn btn-p" onclick="closeM('notif')">OK</button>
+</div>
+</div></div>
+
+<script>
+// DATA MODELS
+class Team{constructor(id,name,desc=''){this.id=id||`t_${Date.now()}`;this.name=name;this.description=desc}}
+class Member{constructor(id,name,teamId,role,type,focus,cap){this.id=id||`m_${Date.now()}`;this.name=name;this.teamId=teamId;this.role=role;this.type=type;this.focusFactor=focus||100;this.capacity=cap||8;this.commitments=[];this.absences=[];this.feAllocation=50;this.beAllocation=50}
+get effectiveCapacity(){const cH=this.commitments.reduce((s,c)=>s+(c.hours||0),0);return this.capacity*(this.focusFactor/100)-cH}
+get feCapacity(){return this.effectiveCapacity*(this.feAllocation/100)}
+get beCapacity(){return this.effectiveCapacity*(this.beAllocation/100)}}
+class Work{constructor(id,title,desc,type,pri,est,rem){this.id=id||`w_${Date.now()}`;this.title=title;this.description=desc||'';this.type=type;this.priority=pri||'Medium';this.estimate=est||0;this.remaining=rem!==undefined?rem:est||0;this.sprintId=null;this.deliveryId=null;this.status='To Do'}}
+class Sprint{constructor(id,name,num,start,end,teamId){this.id=id||`s_${Date.now()}`;this.name=name;this.number=num||1;this.startDate=start;this.endDate=end;this.teamId=teamId;this.overheads=[];this.workItems=[]}
+get durationDays(){const s=new Date(this.startDate);const e=new Date(this.endDate);return Math.ceil((e-s)/(1000*60*60*24))+1}}
+class Delivery{constructor(id,name,desc,start,end){this.id=id||`d_${Date.now()}`;this.name=name;this.description=desc||'';this.startDate=start;this.endDate=end;this.milestones=[];this.sprintIds=[]}}
+
+// STATE
+const S={teams:[],members:[],works:[],sprints:[],deliveries:[],
+load:function(){const d=localStorage.getItem('cpData');if(d){const j=JSON.parse(d);this.teams=j.teams.map(t=>new Team(t.id,t.name,t.description));this.members=j.members.map(m=>{const x=new Member(m.id,m.name,m.teamId,m.role,m.type,m.focusFactor,m.capacity);x.commitments=m.commitments||[];x.absences=m.absences||[];x.feAllocation=m.feAllocation||50;x.beAllocation=m.beAllocation||50;return x});this.works=j.works.map(w=>new Work(w.id,w.title,w.description,w.type,w.priority,w.estimate,w.remaining));this.sprints=j.sprints.map(s=>{const x=new Sprint(s.id,s.name,s.number,s.startDate,s.endDate,s.teamId);x.overheads=s.overheads||[];x.workItems=s.workItems||[];return x});this.deliveries=j.deliveries.map(d=>{const x=new Delivery(d.id,d.name,d.description,d.startDate,d.endDate);x.milestones=d.milestones||[];x.sprintIds=d.sprintIds||[];return x})}},
+save:function(){localStorage.setItem('cpData',JSON.stringify({teams:this.teams,members:this.members,works:this.works,sprints:this.sprints,deliveries:this.deliveries}))}}
+
+// UTILS
+function fmtD(d){if(!d)return '';return new Date(d).toLocaleDateString('sv-SE')}
+function fmtDI(d){if(!d)return '';const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0');return `${y}-${m}-${day}`}
+function showM(m){document.getElementById(m).classList.add('show')}
+function closeM(m){document.getElementById(m).classList.remove('show');const f=document.getElementById(m.replace('M','F'));if(f)f.reset()}
+function showN(m,t='success'){const n=document.getElementById('notif'),i=document.getElementById('notifI'),ti=document.getElementById('notifT'),tx=document.getElementById('notifM');tx.textContent=m;ti.textContent=t==='success'?'Success!':t==='warning'?'Varning':'Fel';i.className=t==='success'?'fas fa-check-circle':t==='warning'?'fas fa-exclamation-triangle':'fas fa-exclamation-circle';i.style.color=t==='success'?'var(--g)':t==='warning'?'var(--w)':'var(--d)';showM('notif')}
+
+// NAV
+function initNav(){document.querySelectorAll('.nav a').forEach(a=>{a.addEventListener('click',()=>{document.querySelectorAll('.nav a').forEach(x=>x.classList.remove('active'));a.classList.add('active');renderP(a.dataset.page)})});renderP('overview')}
+function renderP(p){const m=document.getElementById('main');switch(p){case'overview':m.innerHTML=getOverview();break;case'teams':m.innerHTML=getTeams();break;case'work':m.innerHTML=getWork();break;case'sprints':m.innerHTML=getSprints();break;case'deliveries':m.innerHTML=getDeliveries();break;case'calendar':m.innerHTML=getCalendar();break}switch(p){case'overview':renderO();break;case'teams':renderT();updateTeamS();break;case'work':renderW();updateWorkS();break;case'sprints':renderSp();updateSprintS();break;case'deliveries':renderD();updateDeliveryS();break;case'calendar':renderCalP();break}}
+
+// PAGES
+function getOverview(){return`<div class="page active"><div class="h"><h1><i class="fas fa-home"></i> Översikt</h1><p>Summering av alla resurser</p></div><div class="fg"><div class="stat"><div class="statv" id="tM">0</div><div class="statl">Teammedlemmar</div></div><div class="stat"><div class="statv" id="tFE">0h</div><div class="statl">FE Kapacitet/dag</div></div><div class="stat"><div class="statv" id="tBE">0h</div><div class="statl">BE Kapacitet/dag</div></div><div class="stat"><div class="statv" id="tW">0</div><div class="statl">Arbeten</div></div><div class="stat"><div class="statv" id="tSp">0</div><div class="statl">Sprintar</div></div><div class="stat"><div class="statv" id="tD">0</div><div class="statl">Leveranser</div></div></div><div class="card"><div class="cardh"><h2><i class="fas fa-users"></i> Team Översikt</h2><button class="btn btn-p btn-sm" onclick="showM('teamM')"><i class="fas fa-plus"></i> Team</button></div><div id="teamS"></div></div><div class="card"><div class="cardh"><h2><i class="fas fa-shipping-fast"></i> Leveranser</h2><button class="btn btn-p btn-sm" onclick="showM('deliveryM')"><i class="fas fa-plus"></i> Leverans</button></div><div id="deliveryS"></div></div></div>`}
+function getTeams(){return`<div class="page active"><div class="h"><h1><i class="fas fa-users"></i> Team</h1><p>Hantera medlemmar och kapacitet</p></div><div class="card"><div class="cardh"><h2>Team</h2><button class="btn btn-p btn-sm" onclick="showM('teamM')"><i class="fas fa-plus"></i> Ny</button></div><div id="teamsL"></div></div><div class="card"><div class="cardh"><h2>Medlemmar</h2><button class="btn btn-p btn-sm" onclick="showM('memberM')"><i class="fas fa-plus"></i> Lägg till</button></div><div class="tc"><table><thead><tr><th>Namn</th><th>Team</th><th>Roll</th><th>Typ</th><th>Kapacitet</th><th>Fokus</th><th>FE/BE</th><th>Åtgärder</th></tr></thead><tbody id="membersT"></tbody></table></div></div></div>`}
+function getWork(){return`<div class="page active"><div class="h"><h1><i class="fas fa-tasks"></i> Arbeten</h1><p>Hantera arbetsuppgifter</p></div><div class="card"><div class="cardh"><h2>Arbeten</h2><button class="btn btn-p btn-sm" onclick="showM('workM')"><i class="fas fa-plus"></i> Ny</button></div><div class="tc"><table><thead><tr><th>Titel</th><th>Typ</th><th>Estimat</th><th>Återstående</th><th>Sprint</th><th>Leverans</th><th>Prioritet</th><th>Åtgärder</th></tr></thead><tbody id="worksT"></tbody></table></div></div></div>`}
+function getSprints(){return`<div class="page active"><div class="h"><h1><i class="fas fa-running"></i> Sprintar</h1><p>Hantera sprintar</p></div><div class="card"><div class="cardh"><h2>Sprintar</h2><div class="f g2"><button class="btn btn-p btn-sm" onclick="showM('sprintM')"><i class="fas fa-plus"></i> Ny</button><button class="btn btn-s btn-sm" onclick="genSprints()"><i class="fas fa-magic"></i> Auto</button></div></div><div id="sprintsL"></div></div><div class="card"><div class="cardh"><h2>Kapacitetsfördelning</h2></div><div id="sprintCap"></div></div></div>`}
+function getDeliveries(){return`<div class="page active"><div class="h"><h1><i class="fas fa-shipping-fast"></i> Leveranser</h1><p>Hantera leveranser</p></div><div class="card"><div class="cardh"><h2>Leveranser</h2><button class="btn btn-p btn-sm" onclick="showM('deliveryM')"><i class="fas fa-plus"></i> Ny</button></div><div id="deliveriesL"></div></div></div>`}
+function getCalendar(){return`<div class="page active"><div class="h"><h1><i class="fas fa-calendar-alt"></i> Kalender</h1><p>Visualisera kapacitet</p></div><div class="card"><div class="cardh"><h2>Periodval</h2></div><div class="fg"><div class="fg"><label>Startdatum</label><input type="date" id="calS"></div><div class="fg"><label>Slutdatum</label><input type="date" id="calE"></div><div class="fg"><label>.</label><button class="btn btn-p" onclick="renderCal()"><i class="fas fa-sync"></i> Uppdatera</button></div></div></div><div class="card"><div class="cardh"><h2>Kapacitetsöversikt</h2></div><div id="calSum"></div></div><div class="card"><div class="cardh"><h2>Kalendervy</h2></div><div id="calV"></div></div></div>`}
+
+// RENDER
+function renderO(){document.getElementById('tM').textContent=S.members.length;const fe=S.members.reduce((s,m)=>(m.type==='FE'||m.type==='Both')?s+m.feCapacity:s,0);const be=S.members.reduce((s,m)=>(m.type==='BE'||m.type==='Both')?s+m.beCapacity:s,0);document.getElementById('tFE').textContent=`${fe.toFixed(1)}h`;document.getElementById('tBE').textContent=`${be.toFixed(1)}h`;document.getElementById('tW').textContent=S.works.length;document.getElementById('tSp').textContent=S.sprints.length;document.getElementById('tD').textContent=S.deliveries.length;renderTeamS();renderDeliveryS()}
+function renderTeamS(){const c=document.getElementById('teamS');if(S.teams.length===0){c.innerHTML='<p class="tc" style="color:var(--y)">Inga team ännu</p>';return}let h='<div class="fg">';S.teams.forEach(t=>{const tm=S.members.filter(m=>m.teamId===t.id);const tc=tm.reduce((s,m)=>s+m.effectiveCapacity,0);const fe=tm.reduce((s,m)=>(m.type==='FE'||m.type==='Both')?s+m.feCapacity:s,0);const be=tm.reduce((s,m)=>(m.type==='BE'||m.type==='Both')?s+m.beCapacity:s,0);h+=`<div class="stat"><h3 style="margin-bottom:10px">${t.name}</h3><p style="color:var(--y);font-size:.85rem;margin-bottom:15px">${tm.length} medlemmar</p><div class="pc"><div class="pl"><span>FE</span><span>${fe.toFixed(1)}h/dag</span></div><div class="pb"><div class="pf pf-fe" style="width:${fe>0?(fe/tc*100):0}%">${fe.toFixed(1)}h</div></div></div><div class="pc"><div class="pl"><span>BE</span><span>${be.toFixed(1)}h/dag</span></div><div class="pb"><div class="pf pf-be" style="width:${be>0?(be/tc*100):0}%">${be.toFixed(1)}h</div></div></div><div class="pc"><div class="pl"><span>Total</span><span>${tc.toFixed(1)}h/dag</span></div><div class="pb"><div class="pf pf-t" style="width:100%">${tc.toFixed(1)}h</div></div></div></div>`});h+='</div>';c.innerHTML=h}
+function renderDeliveryS(){const c=document.getElementById('deliveryS');if(S.deliveries.length===0){c.innerHTML='<p class="tc" style="color:var(--y)">Inga leveranser ännu</p>';return}let h='<div class="fg">';S.deliveries.forEach(d=>{const sp=S.sprints.filter(s=>d.sprintIds.includes(s.id));const w=S.works.filter(x=>x.deliveryId===d.id);const te=w.reduce((s,x)=>s+x.estimate,0);const tr=w.reduce((s,x)=>s+x.remaining,0);const p=te>0?((te-tr)/te*100):0;h+=`<div class="stat"><h3 style="margin-bottom:10px">${d.name}</h3><p style="color:var(--y);font-size:.85rem;margin-bottom:15px">${sp.length} sprintar | ${w.length} arbeten</p><div class="pc"><div class="pl"><span>${te}h</span><span>${tr}h kvar</span></div><div class="pb"><div class="pf pf-t" style="width:${p}%">${p.toFixed(1)}%</div></div></div><p style="margin-top:10px;font-size:.85rem"><b>Deadline:</b> ${fmtD(d.endDate)}</p></div>`});h+='</div>';c.innerHTML=h}
+function renderT(){const c=document.getElementById('teamsL');if(S.teams.length===0){c.innerHTML='<p class="tc" style="color:var(--y)">Inga team ännu</p>';return}let h='<div class="fg2">';S.teams.forEach(t=>{const mc=S.members.filter(m=>m.teamId===t.id).length;h+=`<div class="card"><div class="cardh"><h2 style="font-size:1.1rem">${t.name}</h2><div><button class="btn btn-s btn-sm" onclick="editTeam('${t.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-sm" onclick="delTeam('${t.id}')"><i class="fas fa-trash"></i></button></div></div><p style="color:var(--y);font-size:.9rem;margin-bottom:10px">${t.description||'Ingen beskrivning'}</p><p><b>${mc}</b> medlemmar</p></div>`});h+='</div>';c.innerHTML=h;renderMembersT()}
+function renderMembersT(){const c=document.getElementById('membersT');if(S.members.length===0){c.innerHTML='<tr><td colspan="8" class="tc" style="color:var(--y)">Inga medlemmar ännu</td></tr>';return}let h='';S.members.forEach(m=>{const t=S.teams.find(x=>x.id===m.teamId);const tb=m.type==='FE'?'b-fe':m.type==='BE'?'b-be':'b-both';h+=`<tr><td>${m.name}</td><td>${t?t.name:'Ingen'}</td><td>${m.role}</td><td><span class="badge ${tb}">${m.type}</span></td><td>${m.effectiveCapacity.toFixed(1)}h/dag</td><td>${m.focusFactor}%</td><td>${m.feAllocation}% / ${m.beAllocation}%</td><td><button class="btn btn-s btn-sm" onclick="editMember('${m.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-sm" onclick="delMember('${m.id}')"><i class="fas fa-trash"></i></button></td></tr>`});c.innerHTML=h}
+function renderW(){renderWorksT()}
+function renderWorksT(){const c=document.getElementById('worksT');if(S.works.length===0){c.innerHTML='<tr><td colspan="8" class="tc" style="color:var(--y)">Inga arbeten ännu</td></tr>';return}let h='';S.works.forEach(w=>{const sp=S.sprints.find(x=>x.id===w.sprintId);const d=S.deliveries.find(x=>x.id===w.deliveryId);const tb=w.type==='FE'?'b-fe':w.type==='BE'?'b-be':'b-both';h+=`<tr><td>${w.title}</td><td><span class="badge ${tb}">${w.type}</span></td><td>${w.estimate}h</td><td>${w.remaining}h</td><td>${sp?`Sprint ${sp.number}`:'-'}</td><td>${d?d.name:'-'}</td><td>${w.priority}</td><td><button class="btn btn-s btn-sm" onclick="editWork('${w.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-sm" onclick="delWork('${w.id}')"><i class="fas fa-trash"></i></button></td></tr>`});c.innerHTML=h}
+function renderSp(){const c=document.getElementById('sprintsL');if(S.sprints.length===0){c.innerHTML='<p class="tc" style="color:var(--y)">Inga sprintar ännu</p>';return}let h='<div class="fg2">';S.sprints.forEach(sp=>{const t=S.teams.find(x=>x.id===sp.teamId);const w=S.works.filter(x=>sp.workItems.includes(x.id));const te=w.reduce((s,x)=>s+x.estimate,0);const tm=S.members.filter(m=>m.teamId===sp.teamId);const tc=tm.reduce((s,m)=>s+m.effectiveCapacity*sp.durationDays,0);const oh=sp.overheads.reduce((s,o)=>s+(o.hours||0),0);const ac=tc-oh;const u=ac>0?(te/ac*100):0;h+=`<div class="card"><div class="cardh"><h2 style="font-size:1.1rem">${sp.name||`Sprint ${sp.number}`}</h2><div><button class="btn btn-s btn-sm" onclick="editSprint('${sp.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-sm" onclick="delSprint('${sp.id}')"><i class="fas fa-trash"></i></button></div></div><p style="color:var(--y);font-size:.85rem;margin-bottom:10px">${fmtD(sp.startDate)} - ${fmtD(sp.endDate)} (${sp.durationDays} dagar)</p><p style="margin-bottom:15px"><b>Team:</b> ${t?t.name:'Ingen'} | <b>Arbeten:</b> ${w.length} | <b>Estimat:</b> ${te}h / ${ac.toFixed(1)}h</p><div class="pc"><div class="pl"><span>Utnyttjande</span><span>${u.toFixed(1)}%</span></div><div class="pb"><div class="pf ${u>100?'pf-d':'pf-t'}" style="width:${Math.min(u,100)}%">${u.toFixed(1)}%</div></div></div>${u>100?'<p style="color:var(--d);font-size:.85rem;margin-top:10px"><i class="fas fa-exclamation-triangle"></i> Över kapacitet!</p>':''}</div>`});h+='</div>';c.innerHTML=h;renderSprintCap()}
+function renderSprintCap(){const c=document.getElementById('sprintCap');if(S.sprints.length===0){c.innerHTML='<p class="tc" style="color:var(--y)">Inga sprintar ännu</p>';return}let h='<div class="fg2">';S.sprints.forEach(sp=>{const t=S.teams.find(x=>x.id===sp.teamId);const tm=S.members.filter(m=>m.teamId===sp.teamId);let fe=0,be=0;tm.forEach(m=>{if(m.type==='FE'||m.type==='Both')fe+=m.feCapacity*sp.durationDays;if(m.type==='BE'||m.type==='Both')be+=m.beCapacity*sp.durationDays});const tc=fe+be;const oh=sp.overheads.reduce((s,o)=>s+(o.hours||0),0);h+=`<div class="card"><h3 style="margin-bottom:15px">${sp.name||`Sprint ${sp.number}`}</h3><p style="color:var(--y);font-size:.85rem;margin-bottom:15px">${t?t.name:'Ingen'} | ${sp.durationDays} dagar</p><div class="pc"><div class="pl"><span>FE</span><span>${fe.toFixed(1)}h</span></div><div class="pb"><div class="pf pf-fe" style="width:${fe>0?(fe/tc*100):0}%">${fe.toFixed(1)}h</div></div></div><div class="pc"><div class="pl"><span>BE</span><span>${be.toFixed(1)}h</span></div><div class="pb"><div class="pf pf-be" style="width:${be>0?(be/tc*100):0}%">${be.toFixed(1)}h</div></div></div>${oh>0?`<div class="pc"><div class="pl"><span>Avdrag</span><span>${oh}h</span></div><div class="pb"><div class="pf" style="width:${oh/tc*100}%;background:var(--d)">${oh}h</div></div></div>`:''}<div class="pc"><div class="pl"><span><b>Total Tillgänglig</b></span><span><b>${(tc-oh).toFixed(1)}h</b></span></div></div></div>`});h+='</div>';c.innerHTML=h}
+function renderD(){const c=document.getElementById('deliveriesL');if(S.deliveries.length===0){c.innerHTML='<p class="tc" style="color:var(--y)">Inga leveranser ännu</p>';return}let h='<div class="fg2">';S.deliveries.forEach(d=>{const sp=S.sprints.filter(x=>d.sprintIds.includes(x.id));const w=S.works.filter(x=>x.deliveryId===d.id);const te=w.reduce((s,x)=>s+x.estimate,0);const tr=w.reduce((s,x)=>s+x.remaining,0);const p=te>0?((te-tr)/te*100):0;h+=`<div class="card"><div class="cardh"><h2 style="font-size:1.1rem">${d.name}</h2><div><button class="btn btn-s btn-sm" onclick="editDelivery('${d.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-d btn-sm" onclick="delDelivery('${d.id}')"><i class="fas fa-trash"></i></button></div></div><p style="color:var(--y);font-size:.85rem;margin-bottom:10px">${fmtD(d.startDate)} - ${fmtD(d.endDate)}</p><p style="margin-bottom:15px"><b>Sprintar:</b> ${sp.length} | <b>Arbeten:</b> ${w.length} | <b>Estimat:</b> ${te}h | <b>Återstående:</b> ${tr}h</p><div class="pc"><div class="pl"><span>Färdigställande</span><span>${p.toFixed(1)}%</span></div><div class="pb"><div class="pf pf-t" style="width:${p}%">${p.toFixed(1)}%</div></div></div>${d.milestones.length>0?`<div style="margin-top:15px"><b>Milestones:</b><ul style="margin-top:5px;font-size:.85rem">${d.milestones.map(ms=>`<li>${fmtD(ms.date)}: ${ms.name}</li>`).join('')}</ul></div>`:''}</div>`});h+='</div>';c.innerHTML=h}
+function renderCalP(){const s=document.getElementById('calS'),e=document.getElementById('calE');if(!s.value){s.value=fmtDI(new Date(new Date().getFullYear(),new Date().getMonth(),1))}if(!e.value){const ld=new Date(new Date().getFullYear(),new Date().getMonth()+1,0);e.value=fmtDI(ld)}renderCal();renderCalSum()}
+function renderCal(){const c=document.getElementById('calV'),sd=new Date(document.getElementById('calS').value),ed=new Date(document.getElementById('calE').value);const days=[];let cur=new Date(sd);while(cur<=ed){days.push(new Date(cur));cur.setDate(cur.getDate()+1)}const weeks=[];let cw=[];days.forEach(d=>{if(cw.length===0||d.getDay()!==0)cw.push(d);else{weeks.push(cw);cw=[d]}});if(cw.length>0)weeks.push(cw);let h='';weeks.forEach(w=>{h+='<div class="cv" style="margin-bottom:20px">';h+='<div class="ch">';w.forEach(d=>{const dn=['Sön','Mån','Tis','Ons','Tor','Fre','Lör'][d.getDay()];h+=`<div class="cdh">${dn}</div>`});h+='</div><div style="display:contents">';w.forEach(d=>{const iw=d.getDay()===0||d.getDay()===6,it=d.toDateString()===new Date().toDateString();const ab=S.members.filter(m=>m.absences.some(a=>new Date(a.date).toDateString()===d.toDateString()));const cap=S.members.reduce((s,m)=>m.absences.some(a=>new Date(a.date).toDateString()===d.toDateString())?s:s+m.effectiveCapacity,0);h+=`<div class="cd ${iw?'empty':''}" style="${it?'box-shadow:0 0 0 2px var(--p) inset':''}"><div style="font-weight:600;margin-bottom:5px;font-size:.85rem">${d.getDate()}</div><div style="font-size:.75rem;color:var(--y);margin-top:5px">${cap.toFixed(1)}h kap</div>${ab.length>0?`<div style="margin-top:5px">${ab.map(m=>`<span class="badge b-abs" style="font-size:.7rem" data-tooltip="${m.name}: ${m.absences.find(a=>new Date(a.date).toDateString()===d.toDateString()).type}">-1</span>`).join('')}</div>`:''}</div>`});h+='</div></div>'});c.innerHTML=h}
+function renderCalSum(){const c=document.getElementById('calSum'),sd=new Date(document.getElementById('calS').value),ed=new Date(document.getElementById('calE').value);let tfe=0,tbe=0,td=0;let cur=new Date(sd);while(cur<=ed){if(cur.getDay()!==0&&cur.getDay()!==6){const fe=S.members.reduce((s,m)=>m.absences.some(a=>new Date(a.date).toDateString()===cur.toDateString())?s:(m.type==='FE'||m.type==='Both')?s+m.feCapacity:s,0);const be=S.members.reduce((s,m)=>m.absences.some(a=>new Date(a.date).toDateString()===cur.toDateString())?s:(m.type==='BE'||m.type==='Both')?s+m.beCapacity:s,0);tfe+=fe;tbe+=be;td++}cur.setDate(cur.getDate()+1)}c.innerHTML=`<div class="fg"><div class="stat"><div class="statv">${td}</div><div class="statl">Arbetsdagar</div></div><div class="stat"><div class="statv">${tfe.toFixed(1)}h</div><div class="statl">Total FE</div></div><div class="stat"><div class="statv">${tbe.toFixed(1)}h</div><div class="statl">Total BE</div></div><div class="stat"><div class="statv">${(tfe+tbe).toFixed(1)}h</div><div class="statl">Total Kapacitet</div></div></div>`}
+
+// AUTO SPRINTS
+function genSprints(){const uw=S.works.filter(w=>!w.sprintId);if(uw.length===0){showN('Inga otilldelade arbeten','warning');return}if(S.teams.length===0){showN('Lägg till team först','warning');return}const team=S.teams[0],tm=S.members.filter(m=>m.teamId===team.id);if(tm.length===0){showN('Teamet har inga medlemmar','warning');return}const sdd=10;let fec=0,bec=0;tm.forEach(m=>{if(m.type==='FE'||m.type==='Both')fec+=m.feCapacity*sdd;if(m.type==='BE'||m.type==='Both')bec+=m.beCapacity*sdd});const fw=uw.filter(w=>w.type==='FE'||w.type==='Both'),bw=uw.filter(w=>w.type==='BE'||w.type==='Both');const tfe=fw.reduce((s,w)=>s+w.estimate,0),tbe=bw.reduce((s,w)=>s+w.estimate,0);const rfs=Math.ceil(tfe/fec),rbs=Math.ceil(tbe/bec),rs=Math.max(rfs,rbs);const today=new Date();for(let i=0;i<rs;i++){const sd=new Date(today);sd.setDate(today.getDate()+(i*14));const ed=new Date(sd);ed.setDate(sd.getDate()+9);const sp=new Sprint(null,`Sprint ${S.sprints.length+i+1}`,S.sprints.length+i+1,fmtDI(sd),fmtDI(ed),team.id);S.sprints.push(sp)}let fi=0,bi=0;S.sprints.slice(-rs).forEach(sp=>{while(fi<fw.length){const w=fw[fi];const ct=sp.workItems.reduce((s,wid)=>{const x=S.works.find(wi=>wi.id===wid);return s+(x?x.estimate:0)},0);if(ct+w.estimate<=fec*.9){sp.workItems.push(w.id);w.sprintId=sp.id;fi++}else break}while(bi<bw.length){const w=bw[bi];const ct=sp.workItems.reduce((s,wid)=>{const x=S.works.find(wi=>wi.id===wid);return s+(x?x.estimate:0)},0);if(ct+w.estimate<=bec*.9){if(!sp.workItems.includes(w.id)){sp.workItems.push(w.id);w.sprintId=sp.id}bi++}else break}});S.save();showN(`Auto-genererade ${rs} sprintar och fördelade ${uw.length} arbeten!`);renderSp()}
+
+// UPDATE SELECTS
+function updateTeamS(){document.querySelectorAll('select[data-team]').forEach(s=>{s.innerHTML='<option value="">Välj...</option>';S.teams.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;s.appendChild(o)})})}
+function updateWorkS(){const ss=document.getElementById('wSprint'),ds=document.getElementById('wDelivery');ss.innerHTML='<option value="">Ingen...</option>';S.sprints.forEach(sp=>{const o=document.createElement('option');o.value=sp.id;o.textContent=`${sp.name||`Sprint ${sp.number}`} (${fmtD(sp.startDate)} - ${fmtD(sp.endDate)})`;ss.appendChild(o)});ds.innerHTML='<option value="">Ingen...</option>';S.deliveries.forEach(d=>{const o=document.createElement('option');o.value=d.id;o.textContent=`${d.name} (${fmtD(d.startDate)} - ${fmtD(d.endDate)})`;ds.appendChild(o)})}
+function updateSprintS(){const s=document.getElementById('sTeam');s.innerHTML='<option value="">Välj...</option>';S.teams.forEach(t=>{const o=document.createElement('option');o.value=t.id;o.textContent=t.name;s.appendChild(o)})}
+function updateDeliveryS(){const s=document.getElementById('dSprints');s.innerHTML='';S.sprints.forEach(sp=>{const o=document.createElement('option');o.value=sp.id;o.textContent=`${sp.name||`Sprint ${sp.number}`} (${fmtD(sp.startDate)} - ${fmtD(sp.endDate)})`;s.appendChild(o)})}
+
+// MODAL STATE
+let curComm=[],curAbs=[],curOv=[],curSW=[],curMs=[],curDS=[];
+
+// TEAM MODAL
+function showTeamM(id){const t=document.getElementById('teamMT');if(id){const te=S.teams.find(x=>x.id===id);if(te){document.getElementById('teamId').value=te.id;document.getElementById('teamName').value=te.name;document.getElementById('teamDesc').value=te.description||'';t.textContent='Redigera Team'}}else{document.getElementById('teamId').value='';document.getElementById('teamName').value='';document.getElementById('teamDesc').value='';t.textContent='Ny Team'}showM('teamM')}
+function saveTeam(){const id=document.getElementById('teamId').value,n=document.getElementById('teamName').value,d=document.getElementById('teamDesc').value;if(!n){showN('Namn obligatoriskt','warning');return}if(id){const t=S.teams.find(x=>x.id===id);if(t){t.name=n;t.description=d}}else{S.teams.push(new Team(null,n,d))}S.save();closeM('teamM');showN('Team sparad!');renderT();renderO()}
+function editTeam(id){showTeamM(id)}
+function delTeam(id){if(confirm('Ta bort team?')){const h=S.members.some(m=>m.teamId===id);if(h){showN('Teamet har medlemmar','warning');return}S.teams=S.teams.filter(x=>x.id!==id);S.save();showN('Team borttaget!');renderT();renderO()}}
+
+// MEMBER MODAL
+function showMemberM(id){const t=document.getElementById('memberMT');updateTeamS();if(id){const m=S.members.find(x=>x.id===id);if(m){document.getElementById('memberId').value=m.id;document.getElementById('mName').value=m.name;document.getElementById('mTeam').value=m.teamId;document.getElementById('mRole').value=m.role;document.getElementById('mType').value=m.type;document.getElementById('mFocus').value=m.focusFactor;document.getElementById('mCap').value=m.capacity;document.getElementById('mFE').value=m.feAllocation;document.getElementById('mBE').value=m.beAllocation;curComm=[...m.commitments];curAbs=[...m.absences];renderComm();renderAbs();t.textContent='Redigera Medlem'}}else{document.getElementById('memberId').value='';document.getElementById('mName').value='';document.getElementById('mTeam').value='';document.getElementById('mRole').value='';document.getElementById('mType').value='Both';document.getElementById('mFocus').value=100;document.getElementById('mCap').value=8;document.getElementById('mFE').value=50;document.getElementById('mBE').value=50;curComm=[];curAbs=[];renderComm();renderAbs();t.textContent='Ny Medlem'}showM('memberM')}
+function renderComm(){const c=document.getElementById('commC');if(curComm.length===0){c.innerHTML='<p style="color:var(--y);font-size:.85rem">Inga åtaganden</p>';return}let h='<ul style="list-style:none;margin-top:10px">';curComm.forEach((c,i)=>{h+=`<li style="padding:8px;background:var(--bg);margin-bottom:5px;border-radius:6px;display:flex;justify-content:space-between;align-items:center"><span><b>${c.name}</b>: ${c.hours}h</span><button class="btn btn-d btn-sm" onclick="remComm(${i})" style="padding:4px"><i class="fas fa-trash"></i></button></li>`});h+='</ul>';c.innerHTML=h}
+function addComm(){const n=document.getElementById('newComm').value,h=parseFloat(document.getElementById('commH').value)||0;if(!n||h<=0){showN('Ange namn och timmar','warning');return}curComm.push({name:n,hours:h});document.getElementById('newComm').value='';document.getElementById('commH').value='';renderComm()}
+function remComm(i){curComm.splice(i,1);renderComm()}
+function renderAbs(){const c=document.getElementById('absC');if(curAbs.length===0){c.innerHTML='<p style="color:var(--y);font-size:.85rem">Ingen frånvaro</p>';return}let h='<ul style="list-style:none;margin-top:10px">';curAbs.forEach((a,i)=>{h+=`<li style="padding:8px;background:var(--bg);margin-bottom:5px;border-radius:6px;display:flex;justify-content:space-between;align-items:center"><span><b>${a.type}</b>: ${fmtD(a.date)} (${a.days} dag${a.days>1?'ar':''})</span><button class="btn btn-d btn-sm" onclick="remAbs(${i})" style="padding:4px"><i class="fas fa-trash"></i></button></li>`});h+='</ul>';c.innerHTML=h}
+function addAbs(){const d=document.getElementById('absDate').value,t=document.getElementById('absType').value,dy=parseInt(document.getElementById('absDays').value)||1;if(!d){showN('Ange datum','warning');return}curAbs.push({date:d,type:t,days:dy});document.getElementById('absDate').value='';document.getElementById('absDays').value='1';renderAbs()}
+function remAbs(i){curAbs.splice(i,1);renderAbs()}
+function saveMember(){const id=document.getElementById('memberId').value,n=document.getElementById('mName').value,t=document.getElementById('mTeam').value,r=document.getElementById('mRole').value,ty=document.getElementById('mType').value,f=parseFloat(document.getElementById('mFocus').value)||100,c=parseFloat(document.getElementById('mCap').value)||8,fe=parseFloat(document.getElementById('mFE').value)||50,be=parseFloat(document.getElementById('mBE').value)||50;if(!n||!t||!r){showN('Namn, team och roll obligatoriska','warning');return}if(id){const m=S.members.find(x=>x.id===id);if(m){m.name=n;m.teamId=t;m.role=r;m.type=ty;m.focusFactor=f;m.capacity=c;m.feAllocation=fe;m.beAllocation=be;m.commitments=curComm;m.absences=curAbs}}else{const m=new Member(null,n,t,r,ty,f,c);m.commitments=curComm;m.absences=curAbs;m.feAllocation=fe;m.beAllocation=be;S.members.push(m)}S.save();closeM('memberM');showN('Medlem sparad!');renderT();renderO()}
+function editMember(id){showMemberM(id)}
+function delMember(id){if(confirm('Ta bort medlem?')){S.members=S.members.filter(x=>x.id!==id);S.save();showN('Medlem borttagen!');renderT();renderO()}}
+
+// WORK MODAL
+function showWorkM(id){const t=document.getElementById('workMT');updateWorkS();if(id){const w=S.works.find(x=>x.id===id);if(w){document.getElementById('workId').value=w.id;document.getElementById('wTitle').value=w.title;document.getElementById('wDesc').value=w.description||'';document.getElementById('wType').value=w.type;document.getElementById('wPri').value=w.priority;document.getElementById('wEst').value=w.estimate;document.getElementById('wRem').value=w.remaining;document.getElementById('wSprint').value=w.sprintId||'';document.getElementById('wDelivery').value=w.deliveryId||'';t.textContent='Redigera Arbete'}}else{document.getElementById('workId').value='';document.getElementById('wTitle').value='';document.getElementById('wDesc').value='';document.getElementById('wType').value='Both';document.getElementById('wPri').value='Medium';document.getElementById('wEst').value=0;document.getElementById('wRem').value=0;document.getElementById('wSprint').value='';document.getElementById('wDelivery').value='';t.textContent='Nytt Arbete'}showM('workM')}
+function saveWork(){const id=document.getElementById('workId').value,t=document.getElementById('wTitle').value,d=document.getElementById('wDesc').value,ty=document.getElementById('wType').value,p=document.getElementById('wPri').value,e=parseFloat(document.getElementById('wEst').value)||0,r=parseFloat(document.getElementById('wRem').value)||0,sp=document.getElementById('wSprint').value,dl=document.getElementById('wDelivery').value;if(!t||!ty){showN('Titel och typ obligatoriska','warning');return}if(id){const w=S.works.find(x=>x.id===id);if(w){w.title=t;w.description=d;w.type=ty;w.priority=p;w.estimate=e;w.remaining=r;w.sprintId=sp||null;w.deliveryId=dl||null}}else{const w=new Work(null,t,d,ty,p,e,r);w.sprintId=sp||null;w.deliveryId=dl||null;S.works.push(w)}S.save();closeM('workM');showN('Arbete sparad!');renderW();renderO();renderSp()}
+function editWork(id){showWorkM(id)}
+function delWork(id){if(confirm('Ta bort arbete?')){S.sprints.forEach(sp=>{sp.workItems=sp.workItems.filter(wid=>wid!==id)});S.works=S.works.filter(x=>x.id!==id);S.save();showN('Arbete borttaget!');renderW();renderO();renderSp()}}
+
+// SPRINT MODAL
+function showSprintM(id){const t=document.getElementById('sprintMT');updateSprintS();updateWorkSForSprint();if(id){const sp=S.sprints.find(x=>x.id===id);if(sp){document.getElementById('sprintId').value=sp.id;document.getElementById('sName').value=sp.name||'';document.getElementById('sNum').value=sp.number;document.getElementById('sStart').value=sp.startDate;document.getElementById('sEnd').value=sp.endDate;document.getElementById('sTeam').value=sp.teamId;curOv=[...sp.overheads];curSW=[...sp.workItems];renderOv();renderSW();t.textContent='Redigera Sprint'}}else{document.getElementById('sprintId').value='';document.getElementById('sName').value='';document.getElementById('sNum').value=S.sprints.length+1;document.getElementById('sStart').value=fmtDI(new Date());const ed=new Date();ed.setDate(ed.getDate()+9);document.getElementById('sEnd').value=fmtDI(ed);document.getElementById('sTeam').value=S.teams.length>0?S.teams[0].id:'';curOv=[];curSW=[];renderOv();renderSW();t.textContent='Ny Sprint'}showM('sprintM')}
+function updateWorkSForSprint(){const av=document.getElementById('avWork'),sw=document.getElementById('sWork');av.innerHTML='';S.works.forEach(w=>{if(!curSW.includes(w.id)){const o=document.createElement('option');o.value=w.id;o.textContent=`${w.title} (${w.type}, ${w.estimate}h)`;av.appendChild(o)}}});sw.innerHTML='';curSW.forEach(wid=>{const w=S.works.find(x=>x.id===wid);if(w){const o=document.createElement('option');o.value=w.id;o.textContent=`${w.title} (${w.type}, ${w.estimate}h)`;sw.appendChild(o)}}})}
+function renderOv(){const c=document.getElementById('ovC');if(curOv.length===0){c.innerHTML='<p style="color:var(--y);font-size:.85rem">Inga avdrag</p>';return}let h='<ul style="list-style:none;margin-top:10px">';curOv.forEach((o,i)=>{h+=`<li style="padding:8px;background:var(--bg);margin-bottom:5px;border-radius:6px;display:flex;justify-content:space-between;align-items:center"><span><b>${o.name}</b>: ${o.hours}h</span><button class="btn btn-d btn-sm" onclick="remOv(${i})" style="padding:4px"><i class="fas fa-trash"></i></button></li>`});h+='</ul>';c.innerHTML=h}
+function addOv(){const n=document.getElementById('ovName').value,h=parseFloat(document.getElementById('ovH').value)||0;if(!n||h<=0){showN('Ange namn och timmar','warning');return}curOv.push({name:n,hours:h});document.getElementById('ovName').value='';document.getElementById('ovH').value='';renderOv()}
+function remOv(i){curOv.splice(i,1);renderOv()}
+function renderSW(){const c=document.getElementById('sWork');c.innerHTML='';curSW.forEach(wid=>{const w=S.works.find(x=>x.id===wid);if(w){const o=document.createElement('option');o.value=w.id;o.textContent=`${w.title} (${w.type}, ${w.estimate}h)`;c.appendChild(o)}}})}
+function addToSprint(){const s=document.getElementById('avWork');Array.from(s.selectedOptions).forEach(o=>{const wid=o.value;if(!curSW.includes(wid))curSW.push(wid)});updateWorkSForSprint()}
+function remFromSprint(){const s=document.getElementById('sWork');Array.from(s.selectedOptions).forEach(o=>{const wid=o.value;curSW=curSW.filter(x=>x!==wid)});updateWorkSForSprint()}
+function saveSprint(){const id=document.getElementById('sprintId').value,n=document.getElementById('sName').value,num=parseInt(document.getElementById('sNum').value)||1,sd=document.getElementById('sStart').value,ed=document.getElementById('sEnd').value,t=document.getElementById('sTeam').value;if(!sd||!ed||!t){showN('Start, slut och team obligatoriska','warning');return}if(id){const sp=S.sprints.find(x=>x.id===id);if(sp){sp.name=n||`Sprint ${num}`;sp.number=num;sp.startDate=sd;sp.endDate=ed;sp.teamId=t;sp.overheads=curOv;sp.workItems=curSW}}else{const sp=new Sprint(null,n||`Sprint ${num}`,num,sd,ed,t);sp.overheads=curOv;sp.workItems=curSW;S.sprints.push(sp)}S.save();closeM('sprintM');showN('Sprint sparad!');renderSp();renderO()}
+function editSprint(id){showSprintM(id)}
+function delSprint(id){if(confirm('Ta bort sprint?')){S.works.forEach(w=>{if(w.sprintId===id)w.sprintId=null});S.sprints=S.sprints.filter(x=>x.id!==id);S.save();showN('Sprint borttagen!');renderSp();renderO()}}
+
+// DELIVERY MODAL
+function showDeliveryM(id){const t=document.getElementById('deliveryMT');updateDeliveryS();if(id){const d=S.deliveries.find(x=>x.id===id);if(d){document.getElementById('deliveryId').value=d.id;document.getElementById('dName').value=d.name;document.getElementById('dDesc').value=d.description||'';document.getElementById('dStart').value=d.startDate;document.getElementById('dEnd').value=d.endDate;curMs=[...d.milestones];curDS=[...d.sprintIds];renderMs();renderDS();t.textContent='Redigera Leverans'}}else{document.getElementById('deliveryId').value='';document.getElementById('dName').value='';document.getElementById('dDesc').value='';document.getElementById('dStart').value=fmtDI(new Date());const ed=new Date();ed.setMonth(ed.getMonth()+3);document.getElementById('dEnd').value=fmtDI(ed);curMs=[];curDS=[];renderMs();renderDS();t.textContent='Ny Leverans'}showM('deliveryM')}
+function renderMs(){const c=document.getElementById('msC');if(curMs.length===0){c.innerHTML='<p style="color:var(--y);font-size:.85rem">Inga milestones</p>';return}let h='<ul style="list-style:none;margin-top:10px">';curMs.forEach((m,i)=>{h+=`<li style="padding:8px;background:var(--bg);margin-bottom:5px;border-radius:6px;display:flex;justify-content:space-between;align-items:center"><span><b>${m.name}</b>: ${fmtD(m.date)}</span><button class="btn btn-d btn-sm" onclick="remMs(${i})" style="padding:4px"><i class="fas fa-trash"></i></button></li>`});h+='</ul>';c.innerHTML=h}
+function addMs(){const n=document.getElementById('msName').value,d=document.getElementById('msDate').value;if(!n||!d){showN('Ange namn och datum','warning');return}curMs.push({name:n,date:d});document.getElementById('msName').value='';document.getElementById('msDate').value='';renderMs()}
+function remMs(i){curMs.splice(i,1);renderMs()}
+function renderDS(){const s=document.getElementById('dSprints');s.innerHTML='';S.sprints.forEach(sp=>{const o=document.createElement('option');o.value=sp.id;o.textContent=`${sp.name||`Sprint ${sp.number}`} (${fmtD(sp.startDate)} - ${fmtD(sp.endDate)})`;if(curDS.includes(sp.id))o.selected=true;s.appendChild(o)})}
+function saveDelivery(){const id=document.getElementById('deliveryId').value,n=document.getElementById('dName').value,d=document.getElementById('dDesc').value,sd=document.getElementById('dStart').value,ed=document.getElementById('dEnd').value;if(!n||!sd||!ed){showN('Namn, start och slut obligatoriska','warning');return}const s=document.getElementById('dSprints');const ss=Array.from(s.selectedOptions).map(o=>o.value);if(id){const dl=S.deliveries.find(x=>x.id===id);if(dl){dl.name=n;dl.description=d;dl.startDate=sd;dl.endDate=ed;dl.milestones=curMs;dl.sprintIds=ss}}else{const dl=new Delivery(null,n,d,sd,ed);dl.milestones=curMs;dl.sprintIds=ss;S.deliveries.push(dl)}S.save();closeM('deliveryM');showN('Leverans sparad!');renderD();renderO()}
+function editDelivery(id){showDeliveryM(id)}
+function delDelivery(id){if(confirm('Ta bort leverans?')){S.works.forEach(w=>{if(w.deliveryId===id)w.deliveryId=null});S.deliveries=S.deliveries.filter(x=>x.id!==id);S.save();showN('Leverans borttagen!');renderD();renderO()}}
+
+// INIT
+document.addEventListener('DOMContentLoaded',()=>{S.load();initNav();document.querySelectorAll('.mo').forEach(m=>{m.addEventListener('click',e=>{if(e.target===m)closeM(m.id)})})});
+</script>
+</body>
 </html>
